@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "1 - Build features",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.features",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "2 - Train (fast)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.train",
+      "args": ["--fast", "--baselines"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "2b - Train (full grid search)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.train",
+      "args": ["--baselines"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "3 - Run dashboard",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["backend.app:app", "--reload", "--port", "8000"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ]
+}

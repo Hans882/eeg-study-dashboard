@@ -1,0 +1,39 @@
+# --- Python ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Data: never commit these ---
+# The STEW dataset is ~1 GB of text and is not ours to redistribute; it is
+# licensed to the downloader. Anyone cloning this repo gets it themselves,
+# which is what verify_dataset.py is for.
+data/stew/*.txt
+data/stew/*.csv
+data/processed/*.npz
+
+# --- Trained artefacts: reproducible from the pipeline ---
+models/*.joblib
+models/*.npz
+models/*.csv
+models/*.png
+models/*.json
+
+# --- Per-user runtime state, not source ---
+data/documents/*.json
+data/uploads/*
+data/assets/*
+
+# --- Editor / OS ---
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Keep the directory skeleton in a fresh clone
+!.gitkeep
+!**/.gitkeep

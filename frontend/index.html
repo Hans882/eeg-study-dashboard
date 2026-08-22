@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-state="low" data-tier="full" data-view="library" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adaptive Study Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Syne:wght@600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- SIGNATURE: the cortex ribbon. Four band powers, live, driving everything
+     below it. Thickens for two seconds whenever the layout adapts. -->
+<div class="ribbon" id="ribbon" aria-hidden="true">
+  <div class="band" data-band="delta"><i></i></div>
+  <div class="band" data-band="theta"><i></i></div>
+  <div class="band" data-band="alpha"><i></i></div>
+  <div class="band" data-band="beta"><i></i></div>
+  <div class="playhead" id="playhead"></div>
+</div>
+
+<!-- ==================== TOP BAR ====================
+     Four things only: home, current state, the panel opener, the theme.
+     Present on every view and at every rung — an indicator that vanishes
+     exactly when the interface starts behaving unusually is the opposite of
+     reassuring. -->
+<header class="topbar">
+  <button class="home" id="homeBtn" type="button">
+    <span class="home-mark" aria-hidden="true"></span>
+    <span class="home-text">Adaptive Study</span>
+  </button>
+
+  <button class="sb-pill" id="sbPill" type="button" title="Workload state">
+    <span class="dot" id="pillDot"></span>
+    <span id="pillState">low</span>
+  </button>
+
+  <div class="topbar-right">
+    <button class="tb-btn" id="helpBtn" type="button"
+            title="Help with this section">Help</button>
+    <button class="tb-btn" id="panelBtn" type="button" aria-expanded="false"
+            aria-controls="sidePanel">Session</button>
+    <button class="tb-btn icon" id="themeBtn" type="button" title="Light or dark">&#9789;</button>
+  </div>
+</header>
+
+<a class="skip" href="#reading">Skip to reading</a>
+
+<!-- ==================== LIBRARY VIEW ==================== -->
+<section class="library" id="library">
+  <header class="lib-head">
+    <p class="eyebrow">Adaptive Study Dashboard</p>
+    <h1>Your readings</h1>
+    <p class="lib-sub">Upload a reading and it's segmented into concepts, each
+      rewritten at three levels of detail. The dashboard picks the level from
+      your EEG while you read.</p>
+  </header>
+
+  <div class="dropzone" id="dropzone" tabindex="0" role="button"
+       aria-label="Upload a reading">
+    <input type="file" id="fileInput" accept=".pdf,.docx,.md,.markdown,.txt" hidden>
+    <div class="dz-inner">
+      <p class="dz-title" id="dzTitle">Drop a PDF, Word, Markdown or text file</p>
+      <p class="dz-hint" id="dzHint">or click to choose &middot; up to 25 MB</p>
+      <div class="dz-bar" id="dzBar" hidden><i></i></div>
+    </div>
+  </div>
+  <p class="lib-error" id="libError" hidden></p>
+
+  <div class="lib-list" id="libList"></div>
+</section>
+
+<!-- ==================== READING VIEW ==================== -->
+<div class="shell" id="shell">
+
+  <nav class="rail" id="rail" aria-label="Reading navigation">
+    <div class="rail-block">
+      <button class="back-btn" id="backBtn" type="button">&larr; All readings</button>
+      <p class="eyebrow" id="railSource">&mdash;</p>
+      <h2 class="rail-title" id="railTitle">&mdash;</h2>
+    </div>
+    <div class="rail-block">
+      <p class="eyebrow">Sections</p>
+      <ol class="toc" id="toc"></ol>
+    </div>
+  </nav>
+
+  <main class="reading" id="reading">
+    <header class="doc-head">
+      <div class="doc-meta">
+        <p class="eyebrow" id="docMeta">&mdash;</p>
+        <span class="tier-chip" id="tierChip" title="Content complexity">Full text</span>
+      </div>
+      <h1 id="docTitle">&mdash;</h1>
+    </header>
+
+    <div class="dnd" id="dndBanner" hidden>
+      <b>Focus mode active.</b> <span id="dndDetail">Notifications paused</span>
+    </div>
+
+    <article id="article"></article>
+
+    <nav class="pager" id="pager" hidden aria-label="Concept navigation">
+      <button class="ghost" id="prevConcept" type="button">&larr; Previous</button>
+      <span class="pager-pos" id="pagerPos">Concept 1 of 1</span>
+      <button class="primary" id="nextConcept" type="button">Continue &rarr;</button>
+    </nav>
+
+    <footer class="doc-foot">
+      <button class="ghost" id="backBtn2" type="button">Back to readings</button>
+      <button class="ghost" id="completeBtn" type="button">Mark as complete</button>
+    </footer>
+  </main>
+
+  <aside class="aside" id="aside" aria-label="Study aids">
+    <section class="card">
+      <p class="card-label">Session</p>
+      <p class="stat-big" id="timer">00:00</p>
+      <div class="stat-row"><span>Time in high workload</span><b id="statHigh">&mdash;</b></div>
+      <div class="stat-row"><span>Layout adaptations</span><b id="statAdapt">&mdash;</b></div>
+      <div class="stat-row"><span>Help requests</span><b id="statRescue">&mdash;</b></div>
+    </section>
+    <section class="card">
+      <p class="card-label">Key terms in view</p>
+      <ul class="termlist" id="termList"><li class="muted">&mdash;</li></ul>
+    </section>
+  </aside>
+</div>
+
+<!-- rescue dock -->
+<section class="rescue" id="rescue" aria-live="polite">
+  <header class="rescue-head">
+    <div>
+      <p class="card-label">Stuck on this part?</p>
+      <p class="rescue-topic" id="rescueTopic">&mdash;</p>
+    </div>
+    <button class="icon-btn" id="rescueClose" type="button" aria-label="Hide help">&times;</button>
+  </header>
+  <div class="rescue-actions" role="group" aria-label="Ways into this concept">
+    <button type="button" data-rescue="explain">Explain differently</button>
+    <button type="button" data-rescue="example">Show an example</button>
+    <button type="button" data-rescue="diagram">Draw it</button>
+    <button type="button" data-rescue="prereq">What this assumes</button>
+  </div>
+  <div class="rescue-body" id="rescueBody" hidden></div>
+</section>
+
+<!-- recovery overlay -->
+<div class="recovery" id="recovery" role="dialog" aria-modal="true"
+     aria-labelledby="recoveryTitle" hidden>
+  <div class="recovery-card">
+    <div class="breath" id="breath"><span id="breathText">Take a moment</span></div>
+    <h2 id="recoveryTitle">You've been at high workload for a while</h2>
+    <p class="recovery-body">
+      Sustained overload stops producing learning &mdash; you keep reading and stop
+      building anything. Ninety seconds away is usually faster than pushing on.
+    </p>
+    <div class="recovery-actions">
+      <button class="primary" id="takeBreak" type="button">Take 90 seconds</button>
+      <button class="ghost" id="skipBreak" type="button">Keep reading</button>
+    </div>
+    <p class="recovery-note" id="recoveryNote"></p>
+  </div>
+</div>
+
+<!-- ==================== FIRST-RUN GUIDE ====================
+     Shown once, replayable from the Session panel. An interface that
+     rearranges itself without warning needs to say so before it does it. -->
+<div class="tour-scrim" id="tourScrim" hidden></div>
+<div class="tour" id="tour" hidden role="dialog" aria-modal="true"
+     aria-labelledby="tourTitle">
+  <p class="tour-step" id="tourStep">1 of 6</p>
+  <h2 id="tourTitle">&mdash;</h2>
+  <p class="tour-body" id="tourBody">&mdash;</p>
+  <div class="tour-actions">
+    <button class="ghost" id="tourSkip" type="button">Skip</button>
+    <div class="tour-nav">
+      <button class="ghost" id="tourPrev" type="button">Back</button>
+      <button class="primary" id="tourNext" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SIDE PANEL ====================
+     Everything that used to crowd the bottom bar, grouped into tabs and
+     closed by default. Controls, evidence and history are things you go and
+     look at, not things that need to sit on screen while you read. -->
+<div class="panel-scrim" id="panelScrim" hidden></div>
+
+<aside class="side-panel" id="sidePanel" hidden aria-label="Session panel">
+  <header class="sp-head">
+    <div class="sp-tabs" role="tablist">
+      <button role="tab" data-tab="controls" class="on">Controls</button>
+      <button role="tab" data-tab="timeline">Timeline</button>
+      <button role="tab" data-tab="why">Why?</button>
+    </div>
+    <button class="icon-btn" id="panelClose" type="button" aria-label="Close panel">&times;</button>
+  </header>
+
+  <!-- ---- controls ---- -->
+  <section class="sp-body" data-panel="controls">
+    <div class="sp-status">
+      <span class="dot" id="dot"></span>
+      <span class="status-text">Workload <b id="stateLabel">low</b></span>
+      <svg class="spark" id="spark" viewBox="0 0 160 26" preserveAspectRatio="none"
+           aria-label="Recent workload trace"></svg>
+    </div>
+    <p class="mono" id="meta">&mdash;</p>
+
+    <p class="sp-label">Layout</p>
+    <div class="switch" role="group" aria-label="Layout">
+      <button type="button" data-mode="auto" class="on">Auto</button>
+      <button type="button" data-mode="normal">Full</button>
+      <button type="button" data-mode="simplified">Focus</button>
+      <button type="button" data-mode="focus">Single</button>
+    </div>
+
+    <p class="sp-label">Content detail</p>
+    <div class="switch" role="group" aria-label="Content detail">
+      <button type="button" data-tier="" class="on">Auto</button>
+      <button type="button" data-tier="full">Detailed</button>
+      <button type="button" data-tier="plain">Plain</button>
+      <button type="button" data-tier="essential">Essential</button>
+    </div>
+
+    <p class="sp-label">Breaks <span class="dim">&mdash; study condition</span></p>
+    <div class="switch" role="group" aria-label="Break scheduling">
+      <button type="button" data-break="adaptive" class="on">Adaptive</button>
+      <button type="button" data-break="fixed">Fixed 25/5</button>
+      <button type="button" data-break="off">Off</button>
+    </div>
+    <p class="sp-hint" id="breakHint">Breaks are offered when sustained high
+      workload is measured.</p>
+
+    <p class="sp-label">Guide</p>
+    <button class="ghost wide" id="tourBtn" type="button">Replay the walkthrough</button>
+
+    <p class="sp-label">Replay <span class="dim">&mdash; demo only</span></p>
+    <div class="switch demo" role="group" aria-label="Replay speed">
+      <button type="button" data-speed="1" class="on">1&times;</button>
+      <button type="button" data-speed="6">6&times;</button>
+      <button type="button" data-speed="12">12&times;</button>
+      <button type="button" id="seekBtn">Skip&nbsp;&rarr;</button>
+    </div>
+  </section>
+
+  <!-- ---- timeline ---- -->
+  <section class="sp-body" data-panel="timeline" hidden>
+    <div id="timelinePanel">
+      <p class="card-label">Cognitive workload &middot; this session</p>
+      <svg class="tl-chart" id="tlChart" viewBox="0 0 900 200" preserveAspectRatio="none"
+           role="img" aria-label="Workload probability over the session"></svg>
+      <div class="tl-axis"><span>session start</span><span id="tlNow">now</span></div>
+      <div class="tl-stats">
+        <div><b id="tlHigh">&mdash;</b><span>in high workload</span></div>
+        <div><b id="tlAdapt">&mdash;</b><span>adaptations</span></div>
+        <div><b id="tlOver">&mdash;</b><span>manual overrides</span></div>
+        <div><b id="tlRescue">&mdash;</b><span>help requests</span></div>
+        <div><b id="tlBreak">&mdash;</b><span>breaks taken</span></div>
+        <div><b id="tlAgree">&mdash;</b><span>agrees with label</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- why ---- -->
+  <section class="sp-body" data-panel="why" hidden>
+    <div id="whyPanel">
+      <p class="card-label">Why did the interface adapt?</p>
+      <p class="why-sub" id="whySub">&mdash;</p>
+      <div class="why-thresholds" id="whyThresholds"></div>
+      <div class="why-list" id="whyList"></div>
+      <details class="why-budget">
+        <summary>Distraction budget</summary>
+        <table class="budget-table" id="budgetTable"></table>
+      </details>
+    </div>
+  </section>
+</aside>
+
+<script src="/app.js"></script>
+</body>
+</html>
