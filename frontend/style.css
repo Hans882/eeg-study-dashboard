@@ -1196,7 +1196,12 @@ html[data-state="overload"] .doc-kv { margin-left: 0; }
 .sp-hint {
   margin: var(--s2) 0 0;
   font-size: 12px; line-height: 1.5; color: var(--ink-45);
+  padding-left: var(--s2);
+  border-left: 2px solid var(--line);
 }
+.sp-hint[data-state="counting"] { border-left-color: var(--amber); color: var(--ink-70); }
+.sp-hint[data-state="snoozed"]  { border-left-color: var(--ink-25); }
+.sp-hint[data-state="disabled"] { border-left-color: transparent; color: var(--ink-25); }
 .ghost.wide { width: 100%; text-align: center; }
 
 /* ================= responsive ================= */

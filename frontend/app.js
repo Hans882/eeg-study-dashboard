@@ -829,12 +829,21 @@ const BREAK_HINT = {
   fixed: "Breaks every 25 minutes regardless of workload — the control condition.",
   off: "No breaks offered. Baseline condition.",
 };
+function paintBreakStatus(s_) {
+  const hint = $("breakHint");
+  if (!hint || !s_.break_status) return;
+  // Show the countdown rather than the mode description: a system that is
+  // waiting looks identical to one that is broken unless it says so.
+  hint.textContent = s_.break_status.detail;
+  hint.dataset.state = s_.break_status.state;
+}
+
 const breakBtns = document.querySelectorAll(".sp-body [data-break]");
 breakBtns.forEach(btn => btn.addEventListener("click", async () => {
   breakBtns.forEach(b => b.classList.remove("on"));
   btn.classList.add("on");
   const hint = $("breakHint");
-  if (hint) hint.textContent = BREAK_HINT[btn.dataset.break];
+  if (hint) hint.textContent = BREAK_HINT[btn.dataset.break];   // until the next poll
   await post("/api/break-mode", { mode: btn.dataset.break });
   poll();
 }));
@@ -967,6 +976,7 @@ function paint(s) {
         : "Notifications and session statistics paused";
   }
   showRecovery(s.recovery_due && root.dataset.view === "reading");
+  paintBreakStatus(s);
 
   el.stateLabel.textContent = state;
   const pillState = $("pillState");

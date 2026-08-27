@@ -251,7 +251,13 @@ class Engine:
         if C.STEP_ONE_RUNG and target != self.state:
             target = self.state + (1 if target > self.state else -1)
 
-        if target != self.state and (now - self.last_change) >= self.dwell_sec:
+        # Climbing may skip the dwell wait; falling may not. Stripping the
+        # interface back is the response to a reader in difficulty and should
+        # not be held behind a timer, whereas restoring density too eagerly is
+        # what makes an adaptive interface flicker. The gate is asymmetric on
+        # purpose: escalate on half the dwell, de-escalate on the full one.
+        gate = self.dwell_sec * (0.5 if target > self.state else 1.0)
+        if target != self.state and (now - self.last_change) >= gate:
             self._record_adaptation(self.state, target, self.p_smooth, now)
             self._log("adapt", frm=C.STATES[self.state], to=C.STATES[target],
                       held_sec=round(now - self.last_change, 1))
@@ -335,6 +341,33 @@ class Engine:
         return (self.effective_level() >= 2
                 and self.sustained_high >= self.recovery_after_sec)
 
+    def break_status(self) -> dict:
+        """When the next break can happen, and what is currently blocking it.
+
+        Every input to that decision is already tracked; leaving it implicit
+        makes a working system look broken whenever it is merely waiting.
+        """
+        now = time.monotonic()
+        snoozed = max(0.0, self.recovery_snoozed_until - now)
+        if self.break_mode == "off":
+            return {"state": "disabled", "detail": "Breaks are turned off.",
+                    "seconds": None}
+        if snoozed > 0:
+            return {"state": "snoozed", "seconds": round(snoozed, 1),
+                    "detail": f"Snoozed for another {int(snoozed)}s after "
+                              "'Keep reading'."}
+        if self.break_mode == "fixed":
+            return {"state": "waiting", "seconds": round(self.pomodoro_left, 1),
+                    "detail": f"Next scheduled break in {int(self.pomodoro_left)}s."}
+        if self.effective_level() < 2:
+            return {"state": "waiting", "seconds": None,
+                    "detail": "Waiting for high workload. The clock starts when "
+                              "the interface reaches the high rung."}
+        remaining = max(0.0, self.recovery_after_sec - self.sustained_high)
+        return {"state": "counting", "seconds": round(remaining, 1),
+                "detail": f"{int(remaining)}s more of sustained high workload "
+                          "before a break is offered."}
+
     def recovery_reason(self) -> str:
         if self.break_mode == "fixed":
             return "fixed schedule"
@@ -360,6 +393,7 @@ class Engine:
             "sustained_high_sec": round(self.sustained_high, 1),
             "recovery_due": self.recovery_due(),
             "recovery_reason": self.recovery_reason(),
+            "break_status": self.break_status(),
             "break_mode": self.break_mode,
             "pomodoro_left_sec": round(self.pomodoro_left, 1),
             "pomodoro_work_sec": C.POMODORO_WORK_SEC,
