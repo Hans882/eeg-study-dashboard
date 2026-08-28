@@ -1,7 +1,5 @@
 # Adaptive Study Dashboard Using EEG Cognitive Workload
 
-BCSE415L DA1 implementation — Hansa Leo Chemmanda (23BCE1201), Yokesh Balaji B (23BCE1027).
-
 Raw STEW EEG → MNE band power → LOSO-validated SVM → FastAPI → a study
 interface that simplifies itself when workload is high.
 
@@ -180,32 +178,3 @@ to Full, the adaptation is firing at the wrong moments regardless of what the
 classifier accuracy says.
 
 ---
-
-## Things to be honest about in the viva
-
-These are the questions a panel will actually ask.
-
-1. **The labels are conditions, not workload.** STEW's "low" is eyes-open rest
-   and "high" is the SIMKAP dual task. A classifier can separate them using
-   task-related eye movement and jaw EMG rather than cognitive workload as
-   such. ICA and the 1–40 Hz filter reduce this; they don't eliminate it. If
-   you want a stronger claim, relabel using the subjective ratings in
-   `ratings.txt` and drop the middle ratings.
-2. **No live hardware.** The replay is a faithful simulation of the data path,
-   not of electrode contact, drift, or motion artifacts during real study.
-3. **Epoch overlap inflates the sample count.** 50% overlap means adjacent
-   epochs share half their data. LOSO keeps this from leaking across subjects,
-   but the effective sample size is smaller than `X.shape[0]` suggests.
-4. **The adaptation rules are untested at the level of learning outcomes.**
-   SUS tells you whether the adaptation felt helpful. It does not tell you
-   whether comprehension improved. Say so before someone else does.
-
-## Extending it
-
-- **Live Emotiv:** stream via LSL, buffer 4 s, run `features.band_power` on the
-  buffer, POST to `/api/predict`.
-- **Three levels:** STEW's ratings support low/medium/high. Change
-  `LABELS` in `src/config.py` and the SVM handles it as multiclass.
-- **Per-user calibration:** collect 2 minutes of each state from the actual
-  learner and fine-tune, which is the standard fix for the cross-subject
-  accuracy gap.
