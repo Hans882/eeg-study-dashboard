@@ -169,9 +169,7 @@ trade-off to talk about in the viva.
 
 ---
 
-## 5. Usability study (methodology 6.2, step 8)
 
-`GET /api/log` gives you override counts and timestamps per session. Pair
 that with SUS after each session with 6–8 participants. The number worth
 reporting is **overrides per session** — if people keep forcing the layout back
 to Full, the adaptation is firing at the wrong moments regardless of what the
