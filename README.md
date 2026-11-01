@@ -168,11 +168,3 @@ trade-off to talk about in the viva.
 (via `pylsl` or the Cortex API) and nothing downstream changes.
 
 ---
-
-
-that with SUS after each session with 6–8 participants. The number worth
-reporting is **overrides per session** — if people keep forcing the layout back
-to Full, the adaptation is firing at the wrong moments regardless of what the
-classifier accuracy says.
-
----
